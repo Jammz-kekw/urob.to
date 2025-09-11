@@ -11,7 +11,7 @@ class TagCreate(TagBase):
 class Tag(TagBase):
     id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # --- Users ---
 class UserBase(BaseModel):
@@ -24,7 +24,7 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # --- Assignments ---
 class AssignmentBase(BaseModel):
@@ -37,7 +37,7 @@ class AssignmentCreate(AssignmentBase):
 class Assignment(AssignmentBase):
     id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # --- Tasks ---
 class TaskBase(BaseModel):
@@ -62,7 +62,7 @@ class Task(TaskBase):
     assignments: List[Assignment] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # --- Projects ---
 class ProjectBase(BaseModel):
@@ -81,4 +81,4 @@ class Project(ProjectBase):
     tasks: List[Task] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True

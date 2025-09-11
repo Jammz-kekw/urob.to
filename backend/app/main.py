@@ -1,11 +1,37 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from . import models, schemas, crud
-from .database import engine, Base, get_db
+from .database import engine, Base, get_db, SessionLocal
+from fastapi.middleware.cors import CORSMiddleware
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="ToDo API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://172.23.0.3:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.on_event("startup")
+def seed_data():
+    db: Session = SessionLocal()
+    if not db.query(models.Project).first():
+        project = models.Project(name="Test Project", description="First project")
+        db.add(project)
+        db.commit()
+        db.refresh(project)
+
+        tasks = [
+            models.Task(project_id=project.id, title="Set up backend", description="Run FastAPI in Docker", status="in_progress"),
+            models.Task(project_id=project.id, title="Create frontend", description="Vue app to connect API", status="todo"),
+        ]
+        db.add_all(tasks)
+        db.commit()
+    db.close()
 
 @app.get("/health")
 def health_check():
