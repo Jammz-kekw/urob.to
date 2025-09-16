@@ -20,17 +20,36 @@ app.add_middleware(
 def seed_data():
     db: Session = SessionLocal()
     if not db.query(models.Project).first():
-        project = models.Project(name="Test Project", description="First project")
+        project = models.Project(name="Testovací projekt", description="Projekt na demonštráciu funkcionalít aplikácie")
         db.add(project)
         db.commit()
         db.refresh(project)
 
         tasks = [
-            models.Task(project_id=project.id, title="Set up backend", description="Run FastAPI in Docker", status="in_progress"),
-            models.Task(project_id=project.id, title="Create frontend", description="Vue app to connect API", status="todo"),
+            models.Task(project_id=project.id, title="Zriadenie backendu", description="Spustenie FastAPI prostredníctvom Dockeru", status="in_progress"),
+            models.Task(project_id=project.id, title="Navrhnutie a napojenie frontendu", description="Napojenie Vue na API", status="todo"),
         ]
         db.add_all(tasks)
         db.commit()
+
+    if not db.query(models.User).first():
+        user = models.User(username="John Doe", email="john.doe@mail.com")
+        db.add(user)
+        db.commit()
+        db.refresh(user) 
+
+    if not db.query(models.Tag).first():
+        tag1 = models.Tag(name="Vysoká priorita")
+        tag2 = models.Tag(name="Stredná priorita")
+        tag3 = models.Tag(name="Nízka priorita")
+        db.add(tag1)
+        db.add(tag2)
+        db.add(tag3)
+        db.commit()
+        db.refresh(tag1)
+        db.refresh(tag2)
+        db.refresh(tag3)
+
     db.close()
 
 @app.get("/health")

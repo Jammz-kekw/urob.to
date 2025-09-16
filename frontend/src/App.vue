@@ -1,37 +1,35 @@
-<script setup lang="ts">
-import ProjectsView from './components/ProjectsView.vue';
-</script>
-
 <template>
   <div id="app">
-    <!-- Navbar Component -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">urob.to</a>
-        <ul class="navbar-nav me-auto mb-2 ml-lg-0">
-          <li class="nav-item">
-            <a class="nav-link" aria-current="page" href="#">Prehľad</a>
-          </li>
-        </ul>
-      </div>
-    </nav>
-
-    <!-- Main Content -->
-    <div id="content" class="container mt-4">
-      <ProjectsView />
-    </div>
+    <h1 id="page-title">
+      urob<span class="dot">.</span>to
+    </h1>
+    <ProjectsView />
   </div>
 </template>
 
-<style scoped>
-/* Add some basic styling to ensure navbar is visible */
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
+<script setup lang="ts">
+import ProjectsView from "./views/ProjectsView.vue";
+</script>
+
+<style>
+#app {
+  font-family: Arial, sans-serif;
+  padding: 2rem; /* this is fine for content */
 }
 
-#content {
-  padding-top: 20px;
+/* Fix: make the title fixed in the viewport top-left */
+#page-title {
+  position: fixed; /* fixed to viewport */
+  top: 10px;
+  left: 10px;
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0;
+  z-index: 1000; /* ensures it's above other content */
+}
+
+/* Dot color */
+#page-title .dot {
+  color: red;
 }
 </style>
