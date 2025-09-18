@@ -6,8 +6,13 @@ const api = axios.create({
 
 // --- Projects ---
 export const getProjects = () => api.get("/projects");
-export const createProject = (data: { name: string; description: string }) =>
-  api.post("/projects", data);
+export const createProject = (data: {
+  name: string;
+  description: string;
+  tasks?: any[];
+  tags?: number[];
+  users?: number[];
+}) => api.post("/projects", data);
 export const updateProject = (id: number, data: { name: string; description: string }) =>
   api.put(`/projects/${id}`, data);
 export const deleteProject = (id: number) => api.delete(`/projects/${id}`);
@@ -23,3 +28,9 @@ export const createTask = (data: {
 }) => api.post("/tasks", data);
 export const updateTask = (id: number, data: any) => api.put(`/tasks/${id}`, data);
 export const deleteTask = (id: number) => api.delete(`/tasks/${id}`);
+
+// --- Tags ---
+export const getTags = () => api.get("/tags");
+
+// --- Users ---
+export const getUsers = () => api.get("/users");

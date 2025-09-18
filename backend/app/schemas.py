@@ -4,6 +4,7 @@ from typing import Optional, List
 # --- Tags ---
 class TagBase(BaseModel):
     name: str
+    color: str
 
 class TagCreate(TagBase):
     pass
@@ -34,8 +35,11 @@ class AssignmentBase(BaseModel):
 class AssignmentCreate(AssignmentBase):
     pass
 
-class Assignment(AssignmentBase):
+# Here we embed the User for frontend convenience
+class Assignment(BaseModel):
     id: int
+    user: User
+
     class Config:
         from_attributes = True
 
@@ -47,13 +51,17 @@ class TaskBase(BaseModel):
     due_date: Optional[str] = None
 
 class TaskCreate(TaskBase):
-    project_id: int
+    project_id: Optional[int] = None
+    tags: List[int] = []           # Tag IDs
+    users: List[int] = []          # User IDs
 
 class TaskUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     status: Optional[str] = None
     due_date: Optional[str] = None
+    tags: Optional[List[int]] = None
+    users: Optional[List[int]] = None
 
 class Task(TaskBase):
     id: int
@@ -70,7 +78,7 @@ class ProjectBase(BaseModel):
     description: Optional[str] = None
 
 class ProjectCreate(ProjectBase):
-    pass
+    tasks: List[TaskCreate] = []
 
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None

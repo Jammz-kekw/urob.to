@@ -19,36 +19,55 @@ app.add_middleware(
 @app.on_event("startup")
 def seed_data():
     db: Session = SessionLocal()
+    if not db.query(models.Tag).first():
+        tag1 = models.Tag(name="Vysoká priorita", color="#F4320B")
+        tag2 = models.Tag(name="Stredná priorita", color="#F58E27")
+        tag3 = models.Tag(name="Nízka priorita", color="#F4DC0B")
+        db.add_all([tag1, tag2, tag3])
+        db.commit()
+        db.refresh(tag1)
+        db.refresh(tag2)
+        db.refresh(tag3)
+
+    if not db.query(models.User).first():
+        user = models.User(username="John Doe", email="john.doe@mail.com")
+        user1 = models.User(username="Jožko Ferko", email="jozok.ferko@mail.com")
+        user2 = models.User(username="Palo Ščerba", email="palo.scerba@gmail.com")
+        db.add_all([user, user1, user2])
+        db.commit()
+        db.refresh(user) 
+        db.refresh(user1)
+        db.refresh(user2)
+    
     if not db.query(models.Project).first():
         project = models.Project(name="Testovací projekt", description="Projekt na demonštráciu funkcionalít aplikácie")
         db.add(project)
         db.commit()
         db.refresh(project)
 
+        tags = db.query(models.Tag).all()
+        users = db.query(models.User).all()
+
         tasks = [
-            models.Task(project_id=project.id, title="Zriadenie backendu", description="Spustenie FastAPI prostredníctvom Dockeru", status="in_progress"),
-            models.Task(project_id=project.id, title="Navrhnutie a napojenie frontendu", description="Napojenie Vue na API", status="todo"),
+            models.Task(project_id=project.id, 
+                        title="Zriadenie backendu", 
+                        description="Spustenie FastAPI prostredníctvom Dockeru", 
+                        status="in_progress",
+                        tags=[tags[1]],
+                        assignments=[models.Assignment(user_id=users[0].id)]),
+            
+            models.Task(project_id=project.id,
+                        title="Navrhnutie a napojenie frontendu", 
+                        description="Napojenie Vue na API", 
+                        status="todo",
+                        tags=[tags[0]],
+                        assignments=[
+                            models.Assignment(user_id=users[1].id),
+                            models.Assignment(user_id=users[2].id)
+                        ])
         ]
         db.add_all(tasks)
         db.commit()
-
-    if not db.query(models.User).first():
-        user = models.User(username="John Doe", email="john.doe@mail.com")
-        db.add(user)
-        db.commit()
-        db.refresh(user) 
-
-    if not db.query(models.Tag).first():
-        tag1 = models.Tag(name="Vysoká priorita")
-        tag2 = models.Tag(name="Stredná priorita")
-        tag3 = models.Tag(name="Nízka priorita")
-        db.add(tag1)
-        db.add(tag2)
-        db.add(tag3)
-        db.commit()
-        db.refresh(tag1)
-        db.refresh(tag2)
-        db.refresh(tag3)
 
     db.close()
 
