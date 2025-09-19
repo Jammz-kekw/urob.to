@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { getProjects, deleteProject, createProject, updateTask, getTags, getUsers } from "../services/api";
+import { getProjects, deleteProject, createProject, updateProject, updateTask, getTags, getUsers } from "../services/api";
+import type { ProjectPayload } from "../services/api";
 
 const projects = ref<any[]>([]);
 const tags = ref<any[]>([]);
 const users = ref<any[]>([]);
-const showAddModal = ref(false);
+const showAddModal = ref(false); 
+const showUpdateModal = ref(false);
+const selectedProject = ref<any>(null);
 
 const newProject = ref({
   name: "",
@@ -18,6 +21,76 @@ const newProject = ref({
     users?: number[]; // user IDs
   }[],
 });
+
+const openUpdateModal = (project: any) => {
+  // normalize tags + assignments into ID arrays
+  selectedProject.value = {
+    ...project,
+    tasks: project.tasks.map((t: any) => ({
+      ...t,
+      tags: t.tags.map((tag: any) => tag.id),              // keep only IDs
+      users: t.assignments.map((a: any) => a.user.id)      // keep only IDs
+    }))
+  };
+  showUpdateModal.value = true;
+};
+
+const closeUpdateModal = () => {
+  showUpdateModal.value = false;
+  selectedProject.value = null;
+};
+
+const addTaskToUpdate = () => {
+  selectedProject.value.tasks.push({
+    title: "",
+    description: "",
+    status: "todo",
+    tags: [],
+    users: []
+  });
+};
+
+const removeTaskFromUpdate = (index: number) => {
+  selectedProject.value.tasks.splice(index, 1);
+};
+
+const saveProjectUpdate = async () => {
+  if (!selectedProject.value) return;
+
+  const payload: ProjectPayload = {
+    id: selectedProject.value.id,
+    name: selectedProject.value.name,
+    description: selectedProject.value.description,
+    tasks: selectedProject.value.tasks.map((task: any) => ({
+      id: task.id,
+      title: task.title,
+      description: task.description,
+      status: task.status,
+      due_date: task.due_date || null,
+      project_id: selectedProject.value.id,
+      tags: task.tags,   // IDs only
+      users: task.users  // IDs only
+    }))
+  };
+
+  try {
+    const res = await updateProject(selectedProject.value.id, payload);
+
+    // Update local list
+    const index = projects.value.findIndex((p) => p.id === selectedProject.value.id);
+    if (index !== -1) {
+      projects.value[index] = res.data;
+    }
+
+    closeUpdateModal();
+  } catch (err) {
+    console.error("Failed to update project:", err);
+    alert("Failed to update project");
+  }
+};
+
+
+
 
 const loadProjects = async () => {
   try {
@@ -145,12 +218,15 @@ const removeTask = (index: number) => {
             {{ task.title }}
           </li>
         </ul>
-        <button @click="removeProject(project.id)">Delete</button>
+        <div class="card-buttons">
+          <button @click="openUpdateModal(project)">Edit</button>
+          <button @click="removeProject(project.id)">Delete</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Add Project Modal -->
+<!-- Add Project Modal -->
 <div v-if="showAddModal" class="modal-overlay">
   <div class="modal">
     <h2>Add New Project</h2>
@@ -181,8 +257,9 @@ const removeTask = (index: number) => {
 
           <!-- Task status -->
           <select v-model="task.status">
-            <option value="todo">To Do</option>
-            <option value="done">In progress</option>
+            <option value="todo">To do</option>
+            <option value="in_progress">In progress</option>
+            <option value="done">Done</option>
           </select>
 
           <!-- Task tags -->
@@ -218,36 +295,149 @@ const removeTask = (index: number) => {
     </form>
   </div>
 </div>
-</template>
 
+<!-- Update Project Modal -->
+<div v-if="showUpdateModal" class="modal-overlay">
+  <div class="modal">
+    <h2>Update Project</h2>
+    <form @submit.prevent="saveProjectUpdate">
+      <!-- Project name -->
+      <div class="form-group">
+        <label for="update-name">Name</label>
+        <input id="update-name" v-model="selectedProject.name" type="text" required />
+      </div>
+
+      <!-- Project description -->
+      <div class="form-group">
+        <label for="update-description">Description</label>
+        <textarea
+          id="update-description"
+          v-model="selectedProject.description"
+          rows="4"
+          required
+        ></textarea>
+      </div>
+
+      <!-- Tasks -->
+      <div class="form-group">
+        <label>Tasks</label>
+        <div
+          v-for="(task, index) in selectedProject.tasks"
+          :key="task.id || index"
+          class="task-input"
+        >
+          <h4>Task {{ index + 1 }}</h4>
+          <input v-model="task.title" type="text" placeholder="Task title" required />
+          <textarea v-model="task.description" placeholder="Task description"></textarea>
+
+          <!-- Task status -->
+          <select v-model="task.status">
+            <option value="todo">To do</option>
+            <option value="in_progress">In progress</option>
+            <option value="done">Done</option>
+          </select>
+
+          <!-- Task tags -->
+          <label>Tags</label>
+          <select v-model="task.tags" multiple>
+            <option v-for="tag in tags" :key="tag.id" :value="tag.id">{{ tag.name }}</option>
+          </select>
+
+          <!-- Task users -->
+          <label>Assign Users</label>
+          <select v-model="task.users" multiple>
+            <option v-for="user in users" :key="user.id" :value="user.id">{{ user.username }}</option>
+          </select>
+
+          <!-- Remove task button -->
+          <button type="button" class="secondary" @click="removeTaskFromUpdate(index)">
+            Remove Task
+          </button>
+        </div>
+
+        <button type="button" class="secondary" @click="addTaskToUpdate">
+          + Add Task
+        </button>
+      </div>
+
+      <!-- Buttons -->
+      <div class="modal-buttons">
+        <button type="submit" class="primary">Save</button>
+        <button type="button" class="secondary" @click="closeUpdateModal">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+</template>
 <style scoped>
 .projects-container {
   padding: 1.5rem;
 }
-.add-btn {
-  margin-bottom: 1rem;
-  padding: 0.5rem 1rem;
-  background: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
+
 .project-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); /* wider cards */
   gap: 1rem;
 }
+
 .project-card {
   background: #747474;
   border-radius: 12px;
-  padding: 1rem;
+  padding: 1.5rem; /* a bit more padding */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
+
 .project-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 1rem;
+}
+
+/* Task list adjustments */
+.project-card ul {
+  list-style: none; /* remove dots */
+  padding: 0;
+  margin: 0.5rem 0;
+}
+
+.project-card li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.project-card li input[type="checkbox"] {
+  margin-right: 0.5rem; /* space between checkbox and text */
+}
+
+/* Buttons at the bottom */
+.card-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.card-buttons button {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.card-buttons button:first-child {
+  background-color: #6c757d; /* grey for edit */
+  color: white;
+}
+
+.card-buttons button:last-child {
+  background-color: #dc3545; /* red for delete */
+  color: white;
 }
 
 /* Modal styles */
@@ -380,4 +570,39 @@ button {
 button:hover {
   opacity: 0.9;
 }
+
+.card-buttons {
+  display: flex;
+  gap: 0.5rem; /* spacing between buttons */
+  margin-top: 1rem;
+}
+
+.card-buttons button {
+  flex: 1; /* equal width */
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+/* Grey edit button */
+.btn-edit {
+  background-color: #6c757d; /* grey */
+  color: white;
+}
+.btn-edit:hover {
+  background-color: #5a6268;
+}
+
+/* Red delete button */
+.btn-delete {
+  background-color: #dc3545; /* red */
+  color: white;
+}
+.btn-delete:hover {
+  background-color: #c82333;
+}
+
 </style>

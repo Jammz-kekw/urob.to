@@ -52,16 +52,17 @@ class TaskBase(BaseModel):
 
 class TaskCreate(TaskBase):
     project_id: Optional[int] = None
-    tags: List[int] = []           # Tag IDs
-    users: List[int] = []          # User IDs
+    tags: List[int] = []           
+    users: List[int] = []          
 
 class TaskUpdate(BaseModel):
-    title: Optional[str] = None
+    id: Optional[int] = None
+    title: str                  # required for new tasks
     description: Optional[str] = None
-    status: Optional[str] = None
+    status: str = "todo"        # default value
     due_date: Optional[str] = None
-    tags: Optional[List[int]] = None
-    users: Optional[List[int]] = None
+    tags: List[int] = []        # always a list
+    users: List[int] = []   
 
 class Task(TaskBase):
     id: int
@@ -80,9 +81,11 @@ class ProjectBase(BaseModel):
 class ProjectCreate(ProjectBase):
     tasks: List[TaskCreate] = []
 
+
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
+    tasks: Optional[List[TaskUpdate]] = []
 
 class Project(ProjectBase):
     id: int

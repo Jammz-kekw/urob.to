@@ -90,11 +90,53 @@ def update_project(db: Session, project_id: int, project: schemas.ProjectUpdate)
     db_project = get_project(db, project_id)
     if not db_project:
         return None
-    for key, value in project.dict(exclude_unset=True).items():
+
+    # --- Update project fields ---
+    for key, value in project.dict(exclude={"tasks"}, exclude_unset=True).items():
         setattr(db_project, key, value)
+
+    # --- Update tasks ---
+    for task_data in project.tasks or []:
+        if task_data.id:
+            # existing task
+            db_task = db.query(models.Task).filter(models.Task.id == task_data.id).first()
+            if db_task:
+                db_task.title = task_data.title
+                db_task.description = task_data.description
+                db_task.status = task_data.status
+                db_task.due_date = task_data.due_date
+        else:
+            # new task
+            db_task = models.Task(
+                project_id=project_id,
+                title=task_data.title,
+                description=task_data.description,
+                status=task_data.status,
+                due_date=task_data.due_date
+            )
+            db.add(db_task)
+            db.commit()
+            db.refresh(db_task)
+
+        # --- Update task tags ---
+        if task_data.tags is not None:
+            tags = db.query(models.Tag).filter(models.Tag.id.in_(task_data.tags)).all()
+            db_task.tags = tags
+
+        # --- Update task assignments ---
+        if task_data.users is not None:
+            # remove existing assignments
+            db.query(models.Assignment).filter(models.Assignment.task_id == db_task.id).delete()
+            db.commit()
+            # add new assignments
+            for user_id in task_data.users:
+                assignment = models.Assignment(user_id=user_id, task_id=db_task.id)
+                db.add(assignment)
+
     db.commit()
     db.refresh(db_project)
     return db_project
+
 
 def delete_project(db: Session, project_id: int):
     db_project = get_project(db, project_id)
