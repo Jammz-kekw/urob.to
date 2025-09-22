@@ -25,6 +25,7 @@ services:
     container_name: todo_backend
     restart: always
     env_file: .env
+    image: ${DOCKERHUB_USERNAME}/todo_backend:latest
     ports:
       - "8000:8000"
     depends_on:
@@ -38,6 +39,7 @@ services:
     build: ./frontend
     container_name: todo_frontend
     restart: always
+    image: ${DOCKERHUB_USERNAME}/todo_frontend:latest
     ports:
       - "5173:5173"
     environment:
