@@ -26,7 +26,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # --- Backend ---
+      # --- Backend --- #
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
