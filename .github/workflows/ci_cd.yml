@@ -39,7 +39,7 @@ jobs:
         run: echo 'No tests yet'
       #  run: pytest todo_backend/tests
 
-      # --- Frontend ---
+      # --- Frontend --- #
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
