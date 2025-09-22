@@ -60,19 +60,22 @@ jobs:
   docker:
     needs: build-test
     runs-on: ubuntu-latest
+    env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Check if secrets are available
         run: |
-          if [ -z "${{ secrets.DOCKERHUB_USERNAME }}" ]; then
+          if [ -z "$DOCKERHUB_USERNAME" ]; then
             echo "DOCKERHUB_USERNAME is NOT set!"
           else
             echo "DOCKERHUB_USERNAME is set ✅"
           fi
 
-          if [ -z "${{ secrets.DOCKERHUB_TOKEN }}" ]; then
+          if [ -z "$DOCKERHUB_TOKEN" ]; then
             echo "DOCKERHUB_TOKEN is NOT set!"
           else
             echo "DOCKERHUB_TOKEN is set ✅"
