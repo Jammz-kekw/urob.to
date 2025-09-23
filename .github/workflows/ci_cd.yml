@@ -84,5 +84,5 @@ jobs:
             POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
             POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
         run: |
-            docker-compose -f docker-compose.yml build
-            docker-compose -f docker-compose.yml push
+            docker compose -f docker-compose.yml build
+            docker compose -f docker-compose.yml push
