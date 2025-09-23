@@ -41,13 +41,14 @@ services:
     restart: always
     image: ${DOCKERHUB_USERNAME}/todo_frontend:latest
     ports:
-      - "5173:5173"
+      - "80:80"
     environment:
-      - VITE_API_URL=http://localhost:8000
+      -   URL=todo_backend:8000
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    command: npm run dev -- --host 0.0.0.0
+    #command: npm run dev -- --host 0.0.0.0 ## toto je pre local 
+    command: npm run preview -- --host 0.0.0.0 --port 80 ## toto je pre docker
 
 volumes:
   postgres_data:
