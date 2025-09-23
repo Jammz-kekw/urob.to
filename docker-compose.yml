@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   db:
     image: postgres:14
@@ -24,7 +22,6 @@ services:
     build: ./backend
     container_name: todo_backend
     restart: always
-    env_file: .env
     image: ${DOCKERHUB_USERNAME}/todo_backend:latest
     ports:
       - "8000:8000"
@@ -33,6 +30,10 @@ services:
         condition: service_healthy
     volumes:
       - ./backend:/app
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   frontend:
@@ -43,12 +44,11 @@ services:
     ports:
       - "80:80"
     environment:
-      -   URL=todo_backend:8000
+      VITE_API_URL: http://todo_backend:8000  # Use internal Docker hostname
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    #command: npm run dev -- --host 0.0.0.0 ## toto je pre local 
-    command: npm run preview -- --host 0.0.0.0 --port 80 ## toto je pre docker
+    command: npm run preview -- --host 0.0.0.0 --port 80
 
 volumes:
   postgres_data:
