@@ -9,7 +9,7 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
     services:
-      postgres:   # If you use a DB
+      postgres:
         image: postgres:14
         ports: ["5432:5432"]
         env:
@@ -26,59 +26,49 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # --- Backend --- #
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
-      - name: Install backend deps
+      - name: Install backend dependencies
         run: pip install -r backend/requirements.txt
 
       - name: Run backend tests
         run: echo 'No tests yet'
-      #  run: pytest todo_backend/tests
 
-      # --- Frontend --- #
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "18"
 
-      - name: Install frontend deps
+      - name: Install frontend dependencies
         run: |
           cd frontend
           npm ci
 
       - name: Run frontend build & tests
         run: echo 'No frontend tests yet'
-      #  run: |
-      #    cd frontend
-      #    npm run build
-      #    npm test
 
   docker:
     needs: build-test
     runs-on: ubuntu-latest
-    env:
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Check if secrets are available
         run: |
-          if [ -z "$DOCKERHUB_USERNAME" ]; then
-            echo "DOCKERHUB_USERNAME is NOT set!"
+          if [ -z "${{ secrets.DOCKERHUB_USERNAME }}" ]; then
+            echo "❌ DOCKERHUB_USERNAME is NOT set"
           else
-            echo "DOCKERHUB_USERNAME is set ✅"
+            echo "✅ DOCKERHUB_USERNAME is set"
           fi
 
-          if [ -z "$DOCKERHUB_TOKEN" ]; then
-            echo "DOCKERHUB_TOKEN is NOT set!"
+          if [ -z "${{ secrets.DOCKERHUB_TOKEN }}" ]; then
+            echo "❌ DOCKERHUB_TOKEN is NOT set"
           else
-            echo "DOCKERHUB_TOKEN is set ✅"
+            echo "✅ DOCKERHUB_TOKEN is set"
           fi
 
       - name: Log in to Docker Hub
