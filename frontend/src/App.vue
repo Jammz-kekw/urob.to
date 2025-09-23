@@ -14,18 +14,17 @@ import ProjectsView from "./views/ProjectsView.vue";
 <style>
 #app {
   font-family: Arial, sans-serif;
-  padding: 2rem; /* this is fine for content */
+  padding: 2rem;
 }
 
-/* Fix: make the title fixed in the viewport top-left */
 #page-title {
-  position: fixed; /* fixed to viewport */
+  position: fixed; 
   top: 10px;
   left: 10px;
   font-size: 2rem;
   font-weight: bold;
   margin: 0;
-  z-index: 1000; /* ensures it's above other content */
+  z-index: 1000;
 }
 
 /* Dot color */

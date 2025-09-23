@@ -31,7 +31,7 @@ def seed_data():
 
     if not db.query(models.User).first():
         user = models.User(username="John Doe", email="john.doe@mail.com")
-        user1 = models.User(username="Jožko Ferko", email="jozok.ferko@mail.com")
+        user1 = models.User(username="Jožko Ferko", email="jozko.ferko@mail.com")
         user2 = models.User(username="Palo Ščerba", email="palo.scerba@gmail.com")
         db.add_all([user, user1, user2])
         db.commit()
