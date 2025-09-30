@@ -1,3 +1,9 @@
+<!-- 
+  Root app component
+  - renders the main page with the ProjectsView
+  - serves as entry point of the Vue app
+-->
+
 <template>
   <div id="app">
     <h1 id="page-title">

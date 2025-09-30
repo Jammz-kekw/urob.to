@@ -3,6 +3,18 @@ import { ref, onMounted } from "vue";
 import { getProjects, deleteProject, createProject, updateProject, updateTask, getTags, getUsers } from "../services/api";
 import type { ProjectPayload } from "../services/api";
 
+/*
+  Main ProjectsView displays PROJECTS with their asociated TASKS, TAGS and USERS
+    - Allows users to:
+      • View project details and task assignments
+      • Add new projects with multiple tasks
+      • Edit existing projects and tasks
+      • Delete projects
+      • Toggle task status (todo ↔ done)
+    - Uses modals for add and update operations.
+    - Data is fetched from backend services via `api.ts`.
+*/
+
 const projects = ref<any[]>([]);
 const tags = ref<any[]>([]);
 const users = ref<any[]>([]);
