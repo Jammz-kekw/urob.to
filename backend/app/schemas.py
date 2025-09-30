@@ -1,6 +1,14 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 
+"""
+    Pydantic schemas for data validation
+    - ensures data correctness
+    - prevents errors
+    - prevents malicious data on input (injection attacks)
+
+"""
+
 # --- Tags ---
 class TagBase(BaseModel):
     name: str
@@ -35,7 +43,6 @@ class AssignmentBase(BaseModel):
 class AssignmentCreate(AssignmentBase):
     pass
 
-# Here we embed the User for frontend convenience
 class Assignment(BaseModel):
     id: int
     user: User
@@ -57,11 +64,11 @@ class TaskCreate(TaskBase):
 
 class TaskUpdate(BaseModel):
     id: Optional[int] = None
-    title: str                  # required for new tasks
+    title: str                  
     description: Optional[str] = None
-    status: str = "todo"        # default value
+    status: str = "todo"        
     due_date: Optional[str] = None
-    tags: List[int] = []        # always a list
+    tags: List[int] = []        
     users: List[int] = []   
 
 class Task(TaskBase):

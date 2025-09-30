@@ -3,6 +3,17 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from .database import Base
 
+"""
+    SQLAlchemy ORM models for managing USERS
+                                       TAGS 
+                                       ASSIGNMENTS
+                                       PROJECTS
+                                       TASKS
+    - additionally, many-to-many relationship between TASKS and TAGS managed via 'task_tags' table
+    
+"""
+
+
 task_tags = Table(
     "task_tags",
     Base.metadata,
@@ -57,4 +68,3 @@ class Tag(Base):
     color = Column(String(50), unique=True, nullable=False)
 
     tasks = relationship("Task", secondary=task_tags, back_populates="tags")
-

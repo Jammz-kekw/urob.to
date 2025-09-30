@@ -1,11 +1,16 @@
 import axios from "axios";
 
+/*
+    API client for communicating with the FastAPI backend
+    - exports interfaces to ease the endpoints
+    - contains CRUD for the API calls
+*/
+
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 
-
-// Exporting payloads schemas for clarity
 export interface AssignmentPayload {
   id?: number;
   user: {
@@ -28,8 +33,8 @@ export interface TaskPayload {
   status: "todo" | "in_progress" | "done";
   due_date?: string | null;
   project_id?: number;
-  tags: number[];   // IDs only
-  users: number[];  // IDs only
+  tags: number[]; 
+  users: number[];
 }
 
 export interface ProjectPayload {
@@ -55,7 +60,7 @@ export const deleteProject = (id: number) => api.delete(`/projects/${id}`);
 
 // --- Tasks ---
 export const getTasks = (projectId: number) =>
-  api.get(`/projects/${projectId}`); // returns project incl. tasks
+  api.get(`/projects/${projectId}`);
 export const createTask = (data: {
   project_id: number;
   title: string;

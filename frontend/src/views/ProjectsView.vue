@@ -17,19 +17,18 @@ const newProject = ref({
     title: string;
     description: string;
     status?: string;
-    tags?: number[];  // tag IDs
-    users?: number[]; // user IDs
+    tags?: number[];
+    users?: number[]; 
   }[],
 });
 
 const openUpdateModal = (project: any) => {
-  // normalize tags + assignments into ID arrays
   selectedProject.value = {
     ...project,
     tasks: project.tasks.map((t: any) => ({
       ...t,
-      tags: t.tags.map((tag: any) => tag.id),              // keep only IDs
-      users: t.assignments.map((a: any) => a.user.id)      // keep only IDs
+      tags: t.tags.map((tag: any) => tag.id),              
+      users: t.assignments.map((a: any) => a.user.id)      
     }))
   };
   showUpdateModal.value = true;
@@ -68,15 +67,14 @@ const saveProjectUpdate = async () => {
       status: task.status,
       due_date: task.due_date || null,
       project_id: selectedProject.value.id,
-      tags: task.tags,   // IDs only
-      users: task.users  // IDs only
+      tags: task.tags,  
+      users: task.users 
     }))
   };
 
   try {
     const res = await updateProject(selectedProject.value.id, payload);
 
-    // Update local list
     const index = projects.value.findIndex((p) => p.id === selectedProject.value.id);
     if (index !== -1) {
       projects.value[index] = res.data;
@@ -88,9 +86,6 @@ const saveProjectUpdate = async () => {
     alert("Failed to update project");
   }
 };
-
-
-
 
 const loadProjects = async () => {
   try {
@@ -122,15 +117,14 @@ const removeProject = async (id: number) => {
 
 const addProject = async () => {
   try {
-    // Only include valid tasks
     const filteredTasks = newProject.value.tasks
       .filter(t => t.title.trim() !== "")
       .map(task => ({
         title: task.title,
         description: task.description || "",
         status: task.status || "todo",
-        tags: task.tags || [],   // tag IDs per task
-        users: task.users || []  // user IDs per task
+        tags: task.tags || [],  
+        users: task.users || [] 
       }));
 
     const payload = {
@@ -141,10 +135,8 @@ const addProject = async () => {
 
     const res = await createProject(payload);
 
-    // Add the new project to the local list
     projects.value.push(res.data);
 
-    // Close modal and reset form
     showAddModal.value = false;
     newProject.value = {
       name: "",
@@ -185,8 +177,8 @@ const addTask = () => {
     title: "",
     description: "",
     status: "todo",
-    tags: [] as number[],   // store tag IDs
-    users: [] as number[],  // store user IDs
+    tags: [] as number[],
+    users: [] as number[],
   });
 };
 
@@ -196,39 +188,78 @@ const removeTask = (index: number) => {
 
 </script>
 
+<!----------------------------------------->
 
 <template>
-  <div class="projects-container">
-    <h1>Projects</h1>
-    <button class="add-btn" @click="showAddModal = true">+ Add Project</button>
 
-    <div class="project-grid">
-      <div v-for="project in projects" :key="project.id" class="project-card">
-        <div class="project-header">
-          <h2>{{ project.name }}</h2>
-        </div>
-        <p>{{ project.description }}</p>
-        <ul>
-          <li v-for="task in project.tasks || []" :key="task.id">
-            <input
-              type="checkbox"
-              :checked="task.status === 'done'"
-              @change="toggleTaskStatus(task)"
-            />
-            {{ task.title }}
-          </li>
-        </ul>
-        <div class="card-buttons">
-          <button @click="openUpdateModal(project)">Edit</button>
-          <button @click="removeProject(project.id)">Delete</button>
-        </div>
+<div class="projects-container">
+  <h1>Projects</h1>
+  <button class="add-btn" @click="showAddModal = true">+ Add Project</button>
+
+  <div class="project-grid">
+    <div v-for="project in projects" :key="project.id" class="project-card">
+      <div class="project-header">
+        <h2>{{ project.name }}</h2>
+      </div>
+      <p>{{ project.description }}</p>
+
+      <!-- Task list -->
+      <ul class="task-list">
+        <li v-for="task in project.tasks || []" :key="task.id" class="task-item">
+          
+          <!-- First row: checkbox, title, tag -->
+          <div class="task-top">
+            <div class="task-left">
+              <input
+                type="checkbox"
+                :checked="task.status === 'done'"
+                @change="toggleTaskStatus(task)"
+              />
+              <strong>{{ task.title }}</strong>
+            </div>
+            <div class="task-right">
+              <span
+                v-for="tag in task.tags"
+                :key="tag.id"
+                class="priority"
+                :style="{ backgroundColor: tag.color }"
+              >
+                {{ tag.name }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Second row: description -->
+          <div class="task-description" v-if="task.description">
+            {{ task.description }}
+          </div>
+
+          <!-- Third row: assigned users -->
+          <div class="task-bottom">
+            <span
+              v-for="assignment in task.assignments"
+              :key="assignment.user.id"
+              class="user"
+            >
+              @{{ assignment.user.username }}
+            </span>
+          </div>
+        </li>
+      </ul>
+
+
+      <div class="card-buttons">
+        <button @click="openUpdateModal(project)">Edit</button>
+        <button @click="removeProject(project.id)">Delete</button>
       </div>
     </div>
   </div>
+</div>
+
 
 <!-- Add Project Modal -->
 <div v-if="showAddModal" class="modal-overlay">
-  <div class="modal">
+  <div class="modal-content">
     <h2>Add New Project</h2>
     <form @submit.prevent="addProject">
       <!-- Project name -->
@@ -298,7 +329,7 @@ const removeTask = (index: number) => {
 
 <!-- Update Project Modal -->
 <div v-if="showUpdateModal" class="modal-overlay">
-  <div class="modal">
+  <div class="modal-content">
     <h2>Update Project</h2>
     <form @submit.prevent="saveProjectUpdate">
       <!-- Project name -->
@@ -372,129 +403,190 @@ const removeTask = (index: number) => {
 </div>
 
 </template>
+
+
 <style scoped>
+
+/* --- Projects View --- */
 .projects-container {
-  padding: 1.5rem;
+  text-align: center;
+  padding: 2rem;
+  color: white;
+}
+
+.add-btn {
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  background: #555;
+  border: none;
+  color: white;
+  cursor: pointer;
+  border-radius: 6px;
 }
 
 .project-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); /* wider cards */
-  gap: 1rem;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2rem;
 }
 
 .project-card {
-  background: #747474;
-  border-radius: 12px;
-  padding: 1.5rem; /* a bit more padding */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background: #333;
+  padding: 1rem;
+  border-radius: 10px;
+  width: 100%;
+  width: 720px;
 }
 
 .project-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-/* Task list adjustments */
-.project-card ul {
-  list-style: none; /* remove dots */
-  padding: 0;
-  margin: 0.5rem 0;
-}
-
-.project-card li {
-  display: flex;
-  align-items: center;
   margin-bottom: 0.5rem;
 }
 
-.project-card li input[type="checkbox"] {
-  margin-right: 0.5rem; /* space between checkbox and text */
+.task-list {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0;
+  list-style: none;
 }
 
-/* Buttons at the bottom */
-.card-buttons {
+.task-item {
+  background: #1f1f1f;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
   display: flex;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.task-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.task-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.task-left input[type="checkbox"] {
+  transform: translateY(1px);
+}
+
+.task-left strong {
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  max-width: calc(100% - 20px);
+  display: inline-block;
+}
+
+.task-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  min-width: 120px;
+}
+
+.task-bottom {
+  margin-left: 2.4rem; 
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.task-description {
+  margin-left: 2.4rem;
+  font-size: 0.85rem;
+  color: #ccc;
+  white-space: pre-wrap;
+}
+
+.priority {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  color: #fff;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.user {
+  font-size: 0.8rem;
+  background: #444;
+  color: #fff;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+}
+
+.card-buttons {
   margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
 }
 
 .card-buttons button {
-  flex: 1;
   padding: 0.5rem 1rem;
   border: none;
-  border-radius: 6px;
   cursor: pointer;
-  font-weight: bold;
+  border-radius: 6px;
 }
 
 .card-buttons button:first-child {
-  background-color: #6c757d; /* grey for edit */
+  background: #555;
   color: white;
 }
 
 .card-buttons button:last-child {
-  background-color: #dc3545; /* red for delete */
+  background: #e74c3c;
   color: white;
 }
 
-/* Modal styles */
+/* --- Modal Forms --- */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.4);
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  overflow: auto; /* ✅ allow scrolling if modal is taller than screen */
+  padding: 1rem;
 }
 
-.modal {
-  background: #1e1e1e; /* dark theme background */
+.modal-content {
+  background: #1e1e1e;
   color: #f0f0f0;
   padding: 2rem;
   border-radius: 12px;
   width: 500px;
   max-width: 90%;
-  max-height: 90vh;   /* ✅ don't exceed viewport */
-  overflow-y: auto;   /* ✅ scrollable inside modal */
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  animation: fadeIn 0.25s ease-out;
 }
 
-.modal-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-.modal button {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.modal button[type="submit"] {
-  background: #4caf50;
-  color: white;
-}
-.modal button[type="button"] {
-  background: #747474;
-} 
-
-.modal {
-  background: #1e1e1e; /* dark theme background */
-  color: #f0f0f0; /* light text */
-  padding: 2rem;
-  border-radius: 12px;
-  width: 500px;
-  max-width: 90%;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 h2 {
@@ -513,6 +605,7 @@ h2 {
 label {
   margin-bottom: 0.4rem;
   font-weight: bold;
+  color: #ddd;
 }
 
 input,
@@ -525,6 +618,7 @@ select {
   color: #f0f0f0;
   font-size: 1rem;
   width: 100%;
+  transition: border 0.2s, background 0.2s;
 }
 
 input:focus,
@@ -532,77 +626,44 @@ textarea:focus,
 select:focus {
   border-color: #4caf50;
   outline: none;
+  background: #333;
 }
 
-.task-input {
-  margin-bottom: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+textarea {
+  resize: vertical;
+  min-height: 100px;
 }
 
 .modal-buttons {
   display: flex;
   justify-content: flex-end;
   gap: 0.8rem;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
+}
+
+.modal-buttons button {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
 }
 
 button.primary {
   background: #4caf50;
   color: white;
-  font-weight: bold;
+}
+button.primary:hover {
+  background: #43a047;
 }
 
 button.secondary {
   background: #555;
   color: white;
 }
-
-button {
-  padding: 0.6rem 1.2rem;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-button:hover {
-  opacity: 0.9;
-}
-
-.card-buttons {
-  display: flex;
-  gap: 0.5rem; /* spacing between buttons */
-  margin-top: 1rem;
-}
-
-.card-buttons button {
-  flex: 1; /* equal width */
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-/* Grey edit button */
-.btn-edit {
-  background-color: #6c757d; /* grey */
-  color: white;
-}
-.btn-edit:hover {
-  background-color: #5a6268;
-}
-
-/* Red delete button */
-.btn-delete {
-  background-color: #dc3545; /* red */
-  color: white;
-}
-.btn-delete:hover {
-  background-color: #c82333;
+button.secondary:hover {
+  background: #444;
 }
 
 </style>

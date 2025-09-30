@@ -1,3 +1,9 @@
+# CI/CD pipeline build and testing the deployment of the app 
+# - Backend: Python with PostreSQL database
+# - Frontend: Node.js with npm
+# - Docker: build and push the Docker images to Docker Hub
+
+
 name: CI/CD Pipeline
 
 on:

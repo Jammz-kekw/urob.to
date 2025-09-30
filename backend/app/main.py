@@ -4,9 +4,20 @@ from . import models, schemas, crud
 from .database import engine, Base, get_db, SessionLocal
 from fastapi.middleware.cors import CORSMiddleware
 
+"""
+    FastAPI application for managing USERS
+                                     TAGS 
+                                     ASSIGNMENTS
+                                     PROJECTS
+                                     TASKS
+    - initializes database with default data on startup
+    - healtcheck endpoint and CORS middleware for cross-origin requests (so far enables all requests)
+
+"""
+
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="ToDo API")
+app = FastAPI(title="urob.to API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -16,6 +27,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Insert default data (testing purposes)
 @app.on_event("startup")
 def seed_data():
     db: Session = SessionLocal()
@@ -109,7 +121,7 @@ def create_assignment(assignment: schemas.AssignmentCreate, db: Session = Depend
 def read_assignments(db: Session = Depends(get_db)):
     return crud.get_assignments(db)
 
-# --- Projects (CRUD) ---
+# --- Projects ---
 @app.get("/projects", response_model=list[schemas.Project])
 def read_projects(db: Session = Depends(get_db)):
     return crud.get_projects(db)
@@ -139,7 +151,7 @@ def delete_project(project_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Project not found")
     return db_project
 
-# --- Tasks (CRUD) ---
+# --- Tasks ---
 @app.get("/tasks", response_model=list[schemas.Task])
 def read_tasks(db: Session = Depends(get_db)):
     return crud.get_tasks(db)

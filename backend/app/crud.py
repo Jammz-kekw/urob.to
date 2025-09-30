@@ -1,6 +1,17 @@
 from sqlalchemy.orm import Session
 from . import models, schemas
 
+"""
+    CRUD operations for managing USERS
+                                 TAGS 
+                                 ASSIGNMENTS
+                                 PROJECTS
+                                 TASKS
+
+    Using SQLAlchemy for ORM-based interaction with the database
+
+"""
+
 # --- Users ---
 def create_user(db: Session, user: schemas.UserCreate):
     db_user = models.User(**user.dict())
@@ -45,7 +56,6 @@ def get_project(db: Session, project_id: int):
     return db.query(models.Project).filter(models.Project.id == project_id).first()
 
 def create_project(db: Session, project: schemas.ProjectCreate):
-    # Create base project
     db_project = models.Project(
         name=project.name,
         description=project.description
@@ -67,12 +77,12 @@ def create_project(db: Session, project: schemas.ProjectCreate):
         db.commit()
         db.refresh(db_task)
 
-        # Attach tags
+        # attach tags
         if task_data.tags:
             tags = db.query(models.Tag).filter(models.Tag.id.in_(task_data.tags)).all()
             db_task.tags.extend(tags)
 
-        # Attach users via assignments
+        # attach users via assignments
         if task_data.users:
             users = db.query(models.User).filter(models.User.id.in_(task_data.users)).all()
             for user in users:
