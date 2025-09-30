@@ -24,11 +24,12 @@ services:
   backend:
     build: ./backend
     container_name: todo_backend
-    env_file: ./backend/.env
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
     ports:
       - "8000:8000"
     depends_on:
@@ -47,9 +48,8 @@ services:
     build: 
       context: ./frontend
       args:
-        VITE_API_URL: http://localhost:8000
+        VITE_API_URL: ${VITE_API_URL}
     container_name: todo_frontend
-    env_file: ./frontend/.env
     ports:
       - "80:80"
     depends_on:
