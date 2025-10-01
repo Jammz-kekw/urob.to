@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:14
@@ -23,6 +21,7 @@ services:
 
   backend:
     build: ./backend
+    image: ${DOCKERHUB_USERNAME}/todo_backend:latest
     container_name: todo_backend
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -49,6 +48,7 @@ services:
       context: ./frontend
       args:
         VITE_API_URL: ${VITE_API_URL}
+    image: ${DOCKERHUB_USERNAME}/todo_frontend:latest
     container_name: todo_frontend
     ports:
       - "80:80"
